@@ -1,0 +1,2 @@
+ocserv_sa_user: "svc_iac_sa"
+ocserv_sa_password: "{{ default_ocserv_sa_password }}"

@@ -1,0 +1,151 @@
+---
+- name: Setup iDM configuration
+  hosts: "{{ custom_hosts | default('ipaserver') }}"
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - name: Change global passwords policy
+    ipapwpolicy:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: global_policy
+      maxlife: 90
+      minclasses: 3
+      minlength: 8
+      history: 5
+      dictcheck: yes
+      usercheck: yes
+      state: present
+
+  - name: Populate example users
+    ipauser:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      users:
+        - name: example_do_user
+          first: Data
+          last: Owner
+          email: "example_do_user@{{ default_domain }}"
+          password: exampledouserpass
+        - name: example_dp_user
+          first: Data
+          last: Provider
+          email: "example_dp_user@{{ default_domain }}"
+          password: exampledpuserpass
+        - name: example_ds_user
+          first: Data
+          last: Scientist
+          email: "example_ds_user@{{ default_domain }}"
+          password: exampledsuserpass
+        - name: example_admin_user
+          first: Administrator
+          last: Cloud
+          email: "example_admin_user@{{ default_domain }}"
+          password: exampleadminuserpass
+        - name: example_dpo_user
+          first: Data Protection
+          last: Officer
+          email: "example_dpo_user@{{ default_domain }}"
+          password: exampledpouserpass
+
+  - name: Populate default groups
+    ipagroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      groups:
+        - name: data_owners
+          description: Group for data owner role users
+          user:
+            - example_do_user
+        - name: data_providers
+          description: Group for data provider role users
+          user:
+            - example_dp_user
+        - name: data_scientists
+          description: Group for data scientist role users
+          user:
+            - example_ds_user
+        - name: admins
+          user:
+            - example_admin_user
+            - admin
+        - name: data_protection_officers
+          description: Group for data protection officer users
+          user:
+            - example_dpo_user
+        - name: armds_terminal_administrators
+          description: Group for ARM DS XRDP terminal administrators
+          group:
+            - admins
+        - name: armds_terminal_users
+          description: Group for ARM DS XRDP terminal users
+          group:
+            - data_owners
+            - data_providers
+            - data_scientists
+            - data_protection_officers
+        - name: cpe_vpn_access_users
+          description: Group for remote VPN access via cpe.sandbox.rubda.ru server. Limited access only for armds hosts (rdp), idm hosts (https), sso hosts (8443/https)
+          group:
+            - armds_terminal_users
+            - armds_terminal_administrators
+            - admins
+
+  - name: "Ensure vpn_servers host group presents and cpe.{{ default_domain }} host member of this group"
+    ipahostgroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: vpn_servers
+      description: VPN server hosts group
+      host:
+        - cpe.sandbox.rubda.ru
+      state: present
+
+  - name: "Ensure armds_hosts host group presents and armds01.{{ default_domain }} host member of this group"
+    ipahostgroup:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: armds_hosts
+      description: XRDP hosts group
+      host:
+        - armds01.sandbox.rubda.ru
+      state: present
+
+  - name: Ensure ocserv HBAC service present
+    ipahbacsvc:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: ocserv
+      description: Openconnect VPN server
+
+  - name: Ensure xrdp-sesman HBAC service present
+    ipahbacsvc:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: xrdp-sesman
+      description: XRDP sessions manager
+
+  - name: Ensure ALLOW vpn access for cpe_vpn_access_users ARMDS users HBAC rule present
+    ipahbacrule:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: allow_cpe_vpn_access
+      hbacsvc:
+        - ocserv
+      hostgroup:
+        - vpn_servers
+      group:
+        - cpe_vpn_access_users
+      state: present
+
+  - name: Ensure ALLOW XRDP service access for ARMDS users HBAC rule present
+    ipahbacrule:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: allow_xrdp_sesman_access
+      hbacsvc:
+        - xrdp-sesman
+      hostgroup:
+        - armds_hosts
+      group:
+        - armds_terminal_users
+        - armds_terminal_administrators
+      state: present
+
+  - name: Remove dafault unsecured HBAC rule allow_all. We are serucity patriots
+    ipahbacrule:
+      ipaadmin_password: "{{ ipaadmin_password }}"
+      name: allow_all
+      state: absent

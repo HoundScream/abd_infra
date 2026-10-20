@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Пользователи</h1>
+  <button type="button" class="btn-primary" id="openAddUser">Добавить</button>
+</div>
+
+{% if request.query_params.get('added') %}
+<div class="banner ok">Пользователь добавлен.</div>
+{% endif %}
+{% if request.query_params.get('exists') %}
+<div class="banner error">Такой email уже есть.</div>
+{% endif %}
+
+<section>
+  {% if users %}
+  <table>
+    <tr><th>Email</th><th>Имя</th><th>Календарь</th><th>Статус</th><th></th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.email }}</td>
+      <td>{{ u.display_name or '—' }}</td>
+      <td>{{ u.calendar_name or 'Основной' }}</td>
+      <td>{% if u.enabled %}<span class="ok">активен</span>{% else %}<span class="muted">выкл</span>{% endif %}</td>
+      <td>
+        <form method="post" action="/users/{{ u.id }}/toggle">
+          <button type="submit" class="btn-secondary">{% if u.enabled %}Выключить{% else %}Включить{% endif %}</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Пока никого нет — нажмите «Добавить».</p>
+  {% endif %}
+</section>
+
+<dialog id="addUserDialog" class="modal">
+  <form class="modal-form" method="post" action="/users/add">
+    <div class="modal-head">
+      <h2>Добавить ящик</h2>
+      <button type="button" class="modal-close" id="closeAddUser" aria-label="Закрыть">×</button>
+    </div>
+    <p class="modal-hint">Пароли: <a href="https://id.yandex.ru/security/app-passwords" target="_blank" rel="noopener">id.yandex.ru</a> → «Почта» / «Календарь»</p>
+
+    <div class="modal-grid">
+      <div class="field compact">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required placeholder="user@rubda.ru" autocomplete="username">
+      </div>
+      <div class="field compact">
+        <label for="display_name">Имя</label>
+        <input id="display_name" name="display_name" placeholder="необязательно" autocomplete="name">
+      </div>
+      <div class="field compact">
+        <label for="imap_password">Пароль «Почта»</label>
+        <input id="imap_password" name="imap_password" type="password" required autocomplete="new-password" placeholder="IMAP">
+      </div>
+      <div class="field compact">
+        <label for="caldav_password">Пароль «Календарь»</label>
+        <input id="caldav_password" name="caldav_password" type="password" autocomplete="new-password" placeholder="если другой">
+      </div>
+      <div class="field compact full">
+        <label for="calendar_name">Имя календаря</label>
+        <input id="calendar_name" name="calendar_name" placeholder="Основной">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cancelAddUser">Отмена</button>
+      <button type="submit">Добавить</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  const dlg = document.getElementById('addUserDialog');
+  const openBtn = document.getElementById('openAddUser');
+  const closeBtn = document.getElementById('closeAddUser');
+  const cancelBtn = document.getElementById('cancelAddUser');
+  if (!dlg || !openBtn) return;
+  openBtn.addEventListener('click', () => dlg.showModal());
+  closeBtn.addEventListener('click', () => dlg.close());
+  cancelBtn.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+  {% if request.query_params.get('exists') %}
+  dlg.showModal();
+  {% endif %}
+})();
+</script>
+{% endblock %}

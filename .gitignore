@@ -1,0 +1,6 @@
+*.json.key
+CI/TF/yc-sa-key.json
+ssh/*
+!ssh/*.pub
+ssl/**/*.pem
+*.key

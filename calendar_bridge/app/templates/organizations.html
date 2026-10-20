@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Организации{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Организации</h1>
+  <button type="button" class="btn-primary" id="openAddOrg">Добавить</button>
+</div>
+
+<p class="hint">
+  Домены внешних организаций для задачи
+  <a href="/jobs/outgoing_invites/runs">{{ job_labels.outgoing_invites }}</a>.
+  Если во встрече есть участник с таким доменом (или поддоменом) — досылаем .ics.
+  Пример: <code>corp.ru</code> сработает и для <code>mail.corp.ru</code>.
+</p>
+
+{% if request.query_params.get('added') %}
+<div class="banner ok">Домен добавлен.</div>
+{% endif %}
+{% if request.query_params.get('exists') %}
+<div class="banner error">Такой домен уже есть.</div>
+{% endif %}
+{% if request.query_params.get('invalid') %}
+<div class="banner error">Некорректный домен.</div>
+{% endif %}
+
+<section>
+  {% if domains %}
+  <table>
+    <tr><th>Домен</th><th>Организация</th><th>Статус</th><th></th></tr>
+    {% for d in domains %}
+    <tr>
+      <td><code>{{ d.domain }}</code></td>
+      <td>{{ d.org_name or '—' }}</td>
+      <td>{% if d.enabled %}<span class="ok">вкл</span>{% else %}<span class="muted">выкл</span>{% endif %}</td>
+      <td class="nowrap">
+        <form method="post" action="/organizations/{{ d.id }}/toggle" style="display:inline">
+          <button type="submit" class="btn-secondary">{% if d.enabled %}Выключить{% else %}Включить{% endif %}</button>
+        </form>
+        <form method="post" action="/organizations/{{ d.id }}/delete" style="display:inline" onsubmit="return confirm('Удалить {{ d.domain }}?')">
+          <button type="submit" class="btn-secondary">Удалить</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Список пуст — добавьте домены организаций, которым нужно досылать .ics.</p>
+  {% endif %}
+</section>
+
+<dialog id="addOrgDialog" class="modal">
+  <form class="modal-form" method="post" action="/organizations/add">
+    <div class="modal-head">
+      <h2>Добавить домен</h2>
+      <button type="button" class="modal-close" id="closeAddOrg" aria-label="Закрыть">×</button>
+    </div>
+    <p class="modal-hint">Можно указать домен или поддомен. Сработает и для вложенных поддоменов.</p>
+    <div class="modal-grid">
+      <div class="field compact">
+        <label for="domain">Домен</label>
+        <input id="domain" name="domain" required placeholder="example.ru" autocomplete="off">
+      </div>
+      <div class="field compact">
+        <label for="org_name">Название</label>
+        <input id="org_name" name="org_name" placeholder="необязательно">
+      </div>
+      <div class="field compact full">
+        <label for="notes">Заметка</label>
+        <input id="notes" name="notes" placeholder="необязательно">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cancelAddOrg">Отмена</button>
+      <button type="submit">Добавить</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function () {
+  const dlg = document.getElementById('addOrgDialog');
+  const openBtn = document.getElementById('openAddOrg');
+  if (!dlg || !openBtn) return;
+  openBtn.addEventListener('click', () => dlg.showModal());
+  document.getElementById('closeAddOrg').addEventListener('click', () => dlg.close());
+  document.getElementById('cancelAddOrg').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  {% if request.query_params.get('exists') or request.query_params.get('invalid') %}
+  dlg.showModal();
+  {% endif %}
+})();
+</script>
+{% endblock %}

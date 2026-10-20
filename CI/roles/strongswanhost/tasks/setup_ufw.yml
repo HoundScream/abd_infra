@@ -1,0 +1,31 @@
+- name: Ensure UFW certbot app present
+  template:
+    src: ufw_certbot_app.j2
+    dest: /etc/ufw/applications.d/certbot
+
+- name: Ensure UFW strongswan app present
+  template:
+    src: ufw_strongswan_app.j2
+    dest: /etc/ufw/applications.d/strongswan
+
+- name: Ensure UFW OpenSSH StrongSWAN and Certbot apps enabled
+  shell:
+    cmd: "ufw allow {{ item }}"
+  loop:
+    - OpenSSH
+    - strongswan
+    - certbot-web
+
+- name: Ensure UFW sysctl params present
+  template:
+    src: ufw_sysctl.conf.j2
+    dest: /etc/ufw/sysctl.conf
+
+- name: Ensure UFW masquerade and forward rules for ipsec present
+  template:
+    src: ufw_before.rules.j2
+    dest: /etc/ufw/before.rules
+
+- name: Ensure UFW enabled and active
+  shell:
+    cmd: "ufw --force disable && ufw --force enable"

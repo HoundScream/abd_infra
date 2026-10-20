@@ -1,0 +1,7 @@
+- name: Setup default VPN server
+  hosts: "{{ custom_hosts | default('vpnserver') }}"
+  become: yes
+
+  roles:
+  - role: openconnecthost
+    state: present

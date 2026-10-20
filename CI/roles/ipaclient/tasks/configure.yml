@@ -1,0 +1,24 @@
+- name: Ensure HTTP service for host is present
+  ipaservice:
+    ipaadmin_password: "{{ default_ipaadmin_password }}"
+    name: "HTTP/{{ default_hostname_fqdn }}"
+  when: ipaclient_setup_http_service
+
+- name: Ensure HTTP service present for host
+  ipaservice:
+    ipaadmin_password: "{{ default_ipaadmin_password }}"
+    name: "HTTP/{{ default_hostname_fqdn }}"
+    host: "{{ default_hostname_fqdn }}"
+    action: member
+  when: ipaclient_setup_http_service
+
+- name: Ensure directory for ssl files exist
+  file:
+      path: "{{ default_ipa_certs_path }}"
+      state: "directory"
+
+- name: Request HTTP ssl certs for host from idm
+  shell:
+    cmd: "ipa-getcert request -K HTTP/{{ default_hostname_fqdn }} -D {{ default_hostname_fqdn }} -k {{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key -f {{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.pem"
+    creates: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key"
+  when: ipaclient_setup_http_certs and ipaclient_setup_http_service

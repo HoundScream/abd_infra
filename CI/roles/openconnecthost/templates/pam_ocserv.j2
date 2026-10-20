@@ -1,0 +1,26 @@
+# Standard Unix authentication. Do not use the default common-auth
+# as it includes pam_cap that crashes on ocserv.
+
+# here are the per-package modules (the "Primary" block)
+auth    [success=2 default=ignore]      pam_unix.so nullok
+auth    [success=1 default=ignore]      pam_sss.so use_first_pass
+# here's the fallback if no module succeeds
+auth    requisite                       pam_deny.so
+# prime the stack with a positive return value if there isn't one already;
+# this avoids us returning an error just because nothing sets a success code
+# since the modules above will each just jump around
+auth    required                        pam_permit.so
+
+# Disallow non-root logins when /etc/nologin exists.
+account       required     pam_nologin.so
+
+# Standard Un*x authorization.
+@include common-account
+
+# Standard Un*x session setup and teardown.
+@include common-session
+
+# Set up user limits from /etc/security/limits.conf.
+session    required     pam_limits.so
+
+@include common-password

@@ -1,0 +1,4 @@
+default_ansible_user: root
+ansible_host: 10.128.0.10
+ansible_user: cloud-user
+yc_vm_image_id: fd88q0bhq1dnc8iro935

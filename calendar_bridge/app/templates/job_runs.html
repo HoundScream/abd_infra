@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Логи — {{ job.title }}{% endblock %}
+{% block content %}
+<h1>{{ job.title }}</h1>
+<p>{{ job.description }}</p>
+
+{% if flash == 'started' %}
+<div class="banner ok">✓ Задача <strong>запущена</strong>. Подождите 10–30 сек и обновите страницу — ниже появится новая строка в логе.</div>
+{% elif flash == 'already_running' %}
+<div class="banner warn">⏳ Задача <strong>уже выполняется</strong>. Дождитесь завершения.</div>
+{% elif flash == 'not_implemented' %}
+<div class="banner error">✗ Эта задача <strong>ещё не реализована</strong> (заготовка). Тестируйте: incoming_invites, outgoing_invites, sync_audit.</div>
+{% elif flash == 'disabled' %}
+<div class="banner warn">Задача <strong>выключена</strong> в настройках.</div>
+{% elif flash == 'unknown' %}
+<div class="banner error">Задача не найдена.</div>
+{% endif %}
+
+{% if running %}
+<div class="banner warn">⏳ Сейчас выполняется… страница обновится через 5 сек.</div>
+<meta http-equiv="refresh" content="5">
+{% endif %}
+
+<p class="hint">
+  <strong>Как понять, что сработало:</strong> после запуска в таблице ниже появится новая строка со статусом
+  <code>success</code> или <code>failed</code> и текстом итога.
+  Пустая таблица = задача ещё ни разу не отрабатывала успешно или это заготовка без кода.
+</p>
+
+{% if can_run %}
+<form method="post" action="/jobs/{{ job.slug }}/run">
+  <button type="submit" {% if running %}disabled{% endif %}>
+    {% if running %}Выполняется…{% else %}Запустить сейчас{% endif %}
+  </button>
+</form>
+{% else %}
+<p class="muted">Кнопка недоступна — {% if not job.enabled %}задача выключена{% else %}функция в разработке{% endif %}.</p>
+{% endif %}
+
+<p><a href="/">← На обзор</a></p>
+
+<table>
+  <tr><th>Когда</th><th>Кому</th><th>Конец</th><th>Статус</th><th>Что сделано</th><th>Детали</th></tr>
+  {% for run in runs %}
+  <tr>
+    <td>{{ run.started_at.strftime('%d.%m.%Y %H:%M:%S') if run.started_at else '—' }}</td>
+    <td>{{ user_by_id.get(run.user_id, 'все ящики') if run.user_id else 'все ящики' }}</td>
+    <td>{{ run.finished_at.strftime('%H:%M:%S') if run.finished_at else '—' }}</td>
+    <td class="{{ run.status }}">{{ run.status }}</td>
+    <td>{{ explain_run(job.slug, run.summary, run.details_json) }}</td>
+    <td><pre>{{ run.details_json[:500] if run.details_json else '—' }}</pre></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="5" class="muted">Запусков пока нет.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

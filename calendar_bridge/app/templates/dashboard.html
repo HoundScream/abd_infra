@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Обзор{% endblock %}
+{% block content %}
+<h1>Обзор</h1>
+<div class="grid">
+  <div class="stat"><strong>{{ users|length }}</strong><span>пользователей</span></div>
+  <div class="stat"><strong>{{ job_status|length }}</strong><span>задач</span></div>
+  <div class="stat warn"><strong>{% if settings.dry_run %}DRY RUN{% else %}LIVE{% endif %}</strong><span>режим</span></div>
+</div>
+
+<section>
+  <h2>Что делают задачи</h2>
+  <ul class="legend">
+    <li><strong>incoming_invites</strong> — ищет в почте winmail / no_name и добавляет встречу в Яндекс Календарь</li>
+    <li><strong>outgoing_invites</strong> — находит встречи с участниками из списка организаций и досылает .ics</li>
+    <li><strong>sync_audit</strong> — проверяет у каждого ящика: открывается ли почта (IMAP) и календарь (CalDAV)</li>
+    <li><strong>attachment_links</strong> — заготовка, пока не работает</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Задачи</h2>
+  <table>
+    <tr><th>Задача</th><th>Интервал</th><th>Последний запуск</th><th></th></tr>
+    {% for item in job_status %}
+    {% set job = item.job %}
+    <tr>
+      <td>
+        <a href="/jobs/{{ job.slug }}/runs">{{ job.title }}</a><br>
+        <code class="small">{{ job.slug }}</code>
+      </td>
+      <td>{{ job.interval_seconds }} сек<br>{% if job.enabled %}<span class="ok">вкл</span>{% else %}<span class="muted">выкл</span>{% endif %}</td>
+      <td>
+        {% if item.running %}<span class="warn">⏳ выполняется</span>
+        {% elif item.last %}
+          {{ item.last.started_at.strftime('%d.%m %H:%M') if item.last.started_at else '—' }}
+          — <span class="{{ item.last.status }}">{{ item.last.status }}</span><br>
+          <span class="muted">{{ explain_run(job.slug, item.last.summary, item.last.details_json) }}</span>
+        {% else %}<span class="muted">ещё не запускалась</span>{% endif %}
+      </td>
+      <td>
+        {% if job.slug in ['incoming_invites', 'outgoing_invites', 'sync_audit'] and job.enabled %}
+        <form method="post" action="/jobs/{{ job.slug }}/run" style="display:inline">
+          <button type="submit" {% if item.running %}disabled{% endif %}>{% if item.running %}…{% else %}Запустить{% endif %}</button>
+        </form>
+        {% else %}<span class="muted">—</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section>
+  <h2>Последние запуски</h2>
+  <p class="hint">Каждая строка — один автоматический или ручной прогон задачи.</p>
+  <table>
+    <tr><th>Когда</th><th>Задача</th><th>Кому</th><th>Результат</th><th>Статус</th></tr>
+    {% for item in recent_runs %}
+    {% set run = item.run %}
+    {% set job = item.job %}
+    <tr>
+      <td>{{ run.started_at.strftime('%d.%m.%Y %H:%M:%S') if run.started_at else '—' }}</td>
+      <td>
+        {% if job %}
+        <a href="/jobs/{{ job.slug }}/runs">{{ job.title }}</a><br>
+        <code class="small">{{ job.slug }}</code>
+        {% else %}#{{ run.job_id }}{% endif %}
+      </td>
+      <td>{{ item.user_email or 'все ящики' }}</td>
+      <td>{{ item.explained }}</td>
+      <td class="{{ run.status }}">{{ run.status }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">Пока пусто — добавьте пользователя в «Пользователи» и запустите incoming_invites.</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

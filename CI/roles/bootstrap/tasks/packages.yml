@@ -1,0 +1,9 @@
+- name: Install base packages
+  when: ansible_distribution == "Ubuntu"
+  apt:
+    name: "{{ bootstrap_packages }}"
+
+- name: Install base packages
+  when: ansible_distribution == "AlmaLinux"
+  yum:
+    name: "{{ bootstrap_packages }}"

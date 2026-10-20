@@ -1,0 +1,9 @@
+- name: "Setup cloud-init params"
+  template:
+    src: cloud-init_95-cloud.cfg.j2
+    dest: /etc/cloud/cloud.cfg.d/99-local-cloud.cfg
+
+- name: "Restart systemd-logind"
+  service:
+    name: systemd-logind
+    state: restarted

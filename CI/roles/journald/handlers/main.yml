@@ -1,0 +1,23 @@
+- name: restart journald-upload
+  systemd:
+    name: systemd-journal-upload
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: restart systemd-journald
+  systemd:
+    name: systemd-journald
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: restart journald-remote
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  loop:
+    - systemd-journal-remote.socket
+    - systemd-journal-remote.service

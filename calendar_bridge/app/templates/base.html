@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Calendar Bridge{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav>
+    <a href="/">Обзор</a>
+    <a href="/users">Пользователи</a>
+    <a href="/organizations">Организации</a>
+    <a href="/jobs">Задачи</a>
+    <a href="/messages">Входящие</a>
+    <a href="/outgoing">Исходящие</a>
+  </nav>
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>

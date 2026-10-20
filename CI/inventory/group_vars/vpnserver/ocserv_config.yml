@@ -1,0 +1,108 @@
+openconnecthost_ocserv_config:
+  # ocserv daemon settings block
+  listen_proxy_proto: "false"
+  run_as_user: nobody
+  run_as_group: daemon
+  socket_file: /run/ocserv.socket
+  try_mtu_discovery: "false"
+  compression: "false"
+  tls_priorities: "\"NORMAL:%SERVER_PRECEDENCE:%COMPAT:-RSA:-VERS-SSL3.0:-ARCFOUR-128\"" # bracketed option ! must have " at begin and end
+  cookie_timeout: 300
+  persistent_cookies: "false"
+  deny_roaming: "true"
+  rekey_time: 172800
+  rekey_method: ssl
+  use_utmp: "true"
+  use_occtl: "true"
+  pid_file: /run/ocserv.pid
+  device: vpns
+  cisco_client_compat: "true"
+  dtls_legacy: "true"
+  isolate_workers: "true"
+  max_clients: 32
+  max_same_clients: 1
+  server_stats_reset_time: 604800
+  keepalive: 300
+  dpd: 60
+  mobile_dpd: 300
+  switch_to_tcp_timeout: 25
+  auth_timeout: 240
+  idle_timeout: 1800
+  mobile_idle_timeout: 300
+  min_reauth_time: 60
+  # auth and certs section. Default vhost (raas) has plain password file auth
+  auth: "\"plain[passwd={{ ocserv_plain_secrets_file }}]\""  # bracketed option ! must have " at begin and end
+  server_cert: "{{ ocserv_ssl_base }}/raas.{{ default_domain }}/fullchain.pem"
+  server_key: "{{ ocserv_ssl_base }}/raas.{{ default_domain }}/privkey.pem"
+  # system network settings block
+  listen_host: "{{ ansible_internal_host }}"
+  listen_host_is_dyndns: "false"
+  tcp_port: 443
+  udp_port: 443
+  # user network settings block
+  ipv4_network: "10.255.255.0/25"
+  restrict_user_to_routes: "true"
+  default_domain: "{{ default_domain }}"
+  tunnel_all_dns: "false"
+  split_dns: "{{ default_domain }}"
+  dns:
+      - 10.128.0.10
+      - 8.8.8.8
+  ping_leases: "true"
+  predictable_ips: "true"
+  # ddos ant password brutforce prevention
+  max_ban_score: 80
+  ban_reset_time: 300
+  ban_points_wrong_password: 10
+  ban_points_connection: 1
+  ban_points_kkdcp: 1
+  # include personalized users and groups configs
+  config_per_user: "{{ ocserv_config_base }}/config_per_user/"
+  config_per_group: "{{ ocserv_config_base }}/config_per_group/"
+  default_user_config: "{{ ocserv_config_base }}/defaults/user.conf"
+  default_group_config: "{{ ocserv_config_base }}/defaults/group.conf"
+
+
+openconnecthost_ocserv_vhosts:
+  armds_users_vhost:
+    domain: "cpe.{{ default_domain }}"
+    params:
+      auth: "\"pam[gid-min=1530400000]\"" # bracketed option ! must have " at begin and end
+      server_cert: "{{ ocserv_ssl_base }}/cpe.{{ default_domain }}/fullchain.pem"
+      server_key: "{{ ocserv_ssl_base }}/cpe.{{ default_domain }}/privkey.pem"
+      device: vpns
+      ipv4_network: "10.255.255.128/25"
+      restrict_user_to_routes: "true"
+      default_domain: "{{ default_domain }}"
+      tunnel_all_dns: "false"
+      split_dns: "{{ default_domain }}"
+      dns:
+        - 10.128.0.10
+        - 8.8.8.8
+      route:
+        - "{{ hostvars['sso']['ansible_host'] }}/32"
+        - "{{ hostvars['idm']['ansible_host'] }}/32"
+        - "10.128.0.100/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.101/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.102/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.103/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.104/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.105/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.106/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.107/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.108/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.109/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+        - "10.128.0.110/32" # ip route holder for 10 ARMDS hosts (10.128.0.100-128.0.110)
+      restrict_user_to_ports: "tcp(443), tcp(8443), tcp(3389), icmp()"
+
+openconnecthost_ocserv_plain_secrets:
+#        username        : groups list(, sep) :  password hash
+  - "{{ ocserv_sa_user }}:sandbox_infra_admins:{{ ocserv_sa_password | password_hash('sha512') }}"
+
+openconnecthost_ocserv_config_per_group:
+  sandbox_infra_admins:
+    route:
+      - 10.128.0.0/255.255.255.0
+    restrict_user_to_routes: "true"
+
+

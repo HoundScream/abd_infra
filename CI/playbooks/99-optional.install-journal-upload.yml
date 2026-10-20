@@ -1,0 +1,7 @@
+- name: Setup default VPN server
+  hosts: "{{ custom_hosts | default('all') }}"
+  become: yes
+
+  roles:
+  - role: journald
+    state: present

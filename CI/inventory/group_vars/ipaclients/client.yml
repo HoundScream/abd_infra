@@ -1,0 +1,20 @@
+---
+ipaclient_use_otp: no
+ipaclient_force_join: yes
+ipaclient_mkhomedir: yes
+ipaclient_allow_repair: yes
+
+ipasssd_enable_dns_updates: yes
+ipaclient_all_ip_addresses: yes
+ipaclient_configure_dns_resolver: yes
+ipaclient_dns_servers:
+  - "{{ hostvars['idm']['ansible_host'] }}"
+ipaclient_cleanup_dns_resolver: yes
+
+ipaclient_servers: "{{ default_ipa_servers }}"
+ipaclient_domain: "{{ default_domain }}"
+ipaclient_realm: "{{ default_realm }}"
+ipaadmin_password: "{{ default_ipaadmin_password }}"
+
+ipaclient_setup_http_service: yes
+ipaclient_setup_http_certs: yes

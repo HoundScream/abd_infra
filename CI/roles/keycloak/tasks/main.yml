@@ -1,0 +1,6 @@
+---
+- name: Install Postgresql service for Keycloak SSO
+  include_tasks: install_postgresql.yml
+
+- name: Instal Keycloak SSO service
+  include_tasks: install_keycloak.yml

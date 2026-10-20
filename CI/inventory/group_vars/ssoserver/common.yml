@@ -1,0 +1,9 @@
+keycloak_image_url: "quay.io/keycloak/keycloak"
+keycloak_image_tag: "18.0.2"
+keycloak_start_cmd: "start --optimized"
+
+postgresql_image_url: "docker.io/library/postgres"
+postgresql_image_tag: "15"
+
+postgresql_container_volume_path: "/opt/spool/volumes/postgres"
+keycloak_container_volume_path_ssl: "/opt/spool/volumes/keycloak/ssl"

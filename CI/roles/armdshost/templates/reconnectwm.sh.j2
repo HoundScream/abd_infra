@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Write procedures here you want to execute on reconnect
+export WHOAMI=$(whoami)
+export STARTWM="/etc/xrdp/startwm.sh"
+for pid in $(ps aux | grep chromium | grep $WHOAMI | awk '{print $2}'); do kill $pid; done
+exec $STARTWM

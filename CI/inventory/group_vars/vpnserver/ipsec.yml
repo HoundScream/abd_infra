@@ -1,0 +1,3 @@
+strongswanhost_sa_login: "svc_iac_sa"
+strongswanhost_sa_password: "{{ default_strongswan_sa_password }}"
+

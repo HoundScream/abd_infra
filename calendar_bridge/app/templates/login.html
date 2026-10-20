@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Вход — Calendar Bridge</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="center">
+  <form class="card" method="post" action="/login">
+    <h1>Calendar Bridge</h1>
+    <p>Админ-панель АБД</p>
+    {% if request.query_params.get('error') %}
+    <p class="error">Неверный пароль</p>
+    {% endif %}
+    <label>Пароль администратора<input type="password" name="password" required autofocus></label>
+    <button type="submit">Войти</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# defaults file for ipaclient
+# vars/default.yml
+---
+ipaclient_packages: [ "freeipa-client" ]
+#ansible_python_interpreter: '/usr/bin/python3'

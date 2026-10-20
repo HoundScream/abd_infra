@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Исходящее #{{ row.id }}{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="/outgoing">← Исходящие приглашения</a></p>
+<h1>Исходящее #{{ row.id }}</h1>
+
+<section>
+  <h2>Контекст</h2>
+  <dl class="kv">
+    <dt>Ящик организатора</dt><dd>{{ user_email }}</dd>
+    <dt>UID встречи в CalDAV</dt><dd><code class="small">{{ row.event_uid }}</code></dd>
+    <dt>Задача</dt><dd><a href="/jobs/outgoing_invites/runs">{{ job_labels.outgoing_invites }}</a></dd>
+    <dt>Результат</dt>
+    <dd><span class="{{ explanation.css }}"><strong>{{ explanation.label }}</strong></span><br>
+      <span class="muted">{{ explanation.detail }}</span></dd>
+    <dt>Время</dt><dd>{{ when }}</dd>
+    {% if row.message_id and row.status == 'sent' %}
+    <dt>Message-ID</dt><dd><code class="small">{{ row.message_id }}</code></dd>
+    {% endif %}
+  </dl>
+</section>
+
+{% if email_preview %}
+<section>
+  <h2>Письмо участнику</h2>
+  <p class="hint">Так выглядит SMTP-сообщение (текст + вложение .ics).</p>
+  <dl class="kv">
+    <dt>Кому</dt><dd>{{ email_preview.to }}</dd>
+    <dt>От</dt><dd>{{ email_preview.from_name }} &lt;{{ email_preview.from }}&gt;</dd>
+    <dt>Тема</dt><dd>{{ email_preview.subject }}</dd>
+    <dt>Вложение</dt><dd>{{ email_preview.attachment_filename }} ({{ email_preview.attachment_content_type }})</dd>
+  </dl>
+  <h3>Текст письма</h3>
+  <pre class="code-block">{{ email_preview.body_text }}</pre>
+  {% if email_preview.ics_preview %}
+  <h3>ICS (превью)</h3>
+  <pre class="code-block">{{ email_preview.ics_preview }}</pre>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if event %}
+<section>
+  <h2>Параметры встречи из CalDAV</h2>
+  <dl class="kv">
+    <dt>Название</dt><dd>{{ event.summary or '—' }}</dd>
+    <dt>Начало</dt><dd>{{ event.dtstart or '—' }}</dd>
+    <dt>Конец</dt><dd>{{ event.dtend or '—' }}</dd>
+    <dt>Участники</dt><dd>{% if event.attendees %}{{ event.attendees | join(', ') }}{% else %}—{% endif %}</dd>
+  </dl>
+</section>
+{% endif %}
+
+<section>
+  <h2>Сырой JSON (отладка)</h2>
+  <pre class="code-block">{{ details_pretty }}</pre>
+</section>
+{% endblock %}

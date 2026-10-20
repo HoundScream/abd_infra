@@ -1,0 +1,13 @@
+- name: restart xrdp daemon
+  systemd:
+    daemon_reload: yes
+    name: xrdp
+    state: restarted
+    enabled: yes
+
+- name: restart xrdp-sesman daemon
+  systemd:
+    daemon_reload: yes
+    name: xrdp-sesman
+    state: restarted
+    enabled: yes

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Обработанные письма{% endblock %}
+{% block content %}
+<h1>Обработанные письма</h1>
+<p class="hint">
+  Сюда попадают письма, которые нашла задача
+  <a href="/jobs/incoming_invites/runs">{{ job_labels.incoming_invites }}</a>:
+  winmail / no_name / .ics во входящих. Отдельно — раздел
+  <a href="/outgoing">Исходящие</a> (встреча в календаре → .ics внешним участникам).
+</p>
+{% if settings.dry_run or not settings.create_events_enabled %}
+<div class="banner warn">
+  Сейчас {% if settings.dry_run %}DRY RUN{% else %}запись в календарь выключена{% endif %} —
+  встречи не создаются, только фиксируются как «распознано».
+</div>
+{% endif %}
+
+<section>
+  <table>
+    <tr>
+      <th>Когда</th>
+      <th>Ящик</th>
+      <th>Письмо</th>
+      <th>Задача</th>
+      <th>Результат</th>
+    </tr>
+    {% for item in rows %}
+    <tr>
+      <td class="nowrap">{{ item.when }}</td>
+      <td>{{ item.user_email }}</td>
+      <td>
+        <strong>{{ item.subject or '—' }}</strong><br>
+        <span class="muted">от {{ item.sender or '—' }}</span>
+      </td>
+      <td>
+        <a href="/jobs/{{ item.job_slug }}/runs">{{ item.job_title }}</a><br>
+        <code class="small">{{ item.job_slug }}</code>
+      </td>
+      <td>
+        <span class="{{ item.explanation.css }}"><strong>{{ item.explanation.label }}</strong></span><br>
+        <span class="muted">{{ item.explanation.detail }}</span>
+        {% if item.has_details %}
+        <br><a class="btn-link" href="/messages/{{ item.id }}">Подробнее → встреча</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" class="muted">Пока пусто — добавьте ящик и запустите «Входящие приглашения».</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

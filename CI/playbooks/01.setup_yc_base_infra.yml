@@ -1,0 +1,191 @@
+---
+- name: Populate Yandex Cloud resources
+  hosts: "{{ custom_hosts | default('all') }}"
+  connection: local
+
+  tasks:
+  - name: Populate cloud networking
+    run_once: yes
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_vpc_network.default
+        - yandex_vpc_subnet.default-ru-central1-a
+        - yandex_vpc_gateway.default_nat_gateway
+        - yandex_vpc_route_table.default_route_table
+        - yandex_vpc_security_group.vpn_server_sg
+        - yandex_vpc_security_group.sso_server_sg
+        - yandex_vpc_security_group.default_local_network_sg
+        - yandex_vpc_security_group.armds_users_sg
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+
+  - name: Populate base VPN server (cpe.sandbox.rubda.ru)
+    when: inventory_hostname_short == "cpe"
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_compute_instance.cpe
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+        compute_platform_id: "{{default_tf_vm_platform_id}}"
+        compute_cpu_cores: 2
+        compute_mem_gb: 2
+        compute_image_id: "{{ yc_vm_image_id }}"
+        compute_volume_size: 10
+        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+        vpc_ip_address: "{{ ansible_internal_host }}"
+        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+        vpc_nat_enable: "true"
+        vpc_nat_ip_address: "{{ yc_vm_nat_ip_address }}"
+
+  - name: Wait VPN server started
+    when: inventory_hostname_short == "cpe"
+    wait_for:
+      port: 22
+      host: "{{ ansible_host }}"
+      search_regex: OpenSSH
+      sleep: 5
+
+#  - name: Populate deafult gateway server (nat.sandbox.rubda.ru)
+#    when: inventory_hostname_short == "nat"
+#    community.general.terraform:
+#      project_path: "{{ default_tf_project_path }}"
+#      state: present
+#      check_destroy: yes
+#      force_init: no
+#      complex_vars: no
+#      targets:
+#        - yandex_compute_instance.nat
+#      variables:
+#        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+#        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+#        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+#        compute_platform_id: "{{default_tf_vm_platform_id}}"
+#        compute_cpu_cores: 2
+#        compute_mem_gb: 2
+#        compute_image_id: "{{ yc_vm_image_id }}"
+#        compute_volume_size: 10
+#        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+#        vpc_ip_address: "{{ ansible_host }}"
+#        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+#        vpc_nat_enable: "true"
+#        vpc_nat_ip_address: "{{ yc_vm_nat_ip_address }}"
+
+  - name: Populate IPA iDM server (idm.sandbox.rubda.ru)
+    when: inventory_hostname_short == "idm"
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_compute_instance.idm
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+        compute_platform_id: "{{default_tf_vm_platform_id}}"
+        compute_cpu_cores: 4
+        compute_mem_gb: 8
+        compute_image_id: "{{ yc_vm_image_id }}"
+        compute_volume_size: 140
+        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+        vpc_ip_address: "{{ ansible_host }}"
+        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+        vpc_nat_enable: "false"
+
+  - name: Populate Keycloak SSO server (sso.sandbox.rubda.ru)
+    when: inventory_hostname_short == "sso"
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_compute_instance.sso
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+        compute_platform_id: "{{default_tf_vm_platform_id}}"
+        compute_cpu_cores: 2
+        compute_mem_gb: 4
+        compute_image_id: "{{ yc_vm_image_id }}"
+        compute_volume_size: 20
+        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+        vpc_ip_address: "{{ ansible_host }}"
+        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+        vpc_nat_enable: "true"
+        vpc_nat_ip_address: "{{ yc_vm_nat_ip_address }}"
+
+  - name: Populate ARM DS workspace hosts (armds*.sandbox.rubda.ru)
+    when: inventory_hostname_short == "armds01"
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_compute_instance.armds01
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+        compute_platform_id: "{{default_tf_vm_platform_id}}"
+        compute_cpu_cores: 4
+        compute_mem_gb: 16
+        compute_image_id: "{{ yc_vm_image_id }}"
+        compute_volume_size: 80
+        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+        vpc_ip_address: "{{ ansible_host }}"
+        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+        vpc_nat_enable: "false"
+
+  - name: Populate logs collector hosts (logcltr.sandbox.rubda.ru)
+    when: inventory_hostname_short == "logcltr"
+    community.general.terraform:
+      project_path: "{{ default_tf_project_path }}"
+      state: present
+      check_destroy: yes
+      force_init: no
+      complex_vars: no
+      targets:
+        - yandex_compute_instance.logcltr
+      variables:
+        tf_yc_cloud_id: "{{ default_tf_yc_cloud_id }}"
+        tf_yc_folder_id: "{{ default_tf_yc_folder_id }}"
+        compute_vm_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+        compute_platform_id: "{{default_tf_vm_platform_id}}"
+        compute_cpu_cores: 2
+        compute_mem_gb: 6
+        compute_image_id: "{{ yc_vm_image_id }}"
+        compute_volume_size: 200
+        compute_ssh_keys: "{{ default_ansible_user_ssh_pub_keys}}"
+        vpc_ip_address: "{{ ansible_host }}"
+        vpc_subnet_id: "{{ default_tf_yc_subnet_id }}"
+        vpc_nat_enable: "false"
+
+- name: Setup base VPN connection
+  hosts: "{{ custom_hosts | default('vpnserver') }}"
+  become: yes
+
+  roles:
+  - role: bootstrap
+    state: present
+  - role: openconnecthost
+    state: present

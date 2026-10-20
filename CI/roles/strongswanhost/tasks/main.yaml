@@ -1,0 +1,81 @@
+- name: Install strongswan packages
+  apt:
+    name:
+      - strongswan
+      - strongswan-charon
+      - strongswan-starter
+      - libcharon-extauth-plugins
+      - libcharon-extra-plugins
+      - libstrongswan-extra-plugins
+      - libstrongswan-standard-plugins
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install certbot packages
+  apt:
+    name:
+      - certbot
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Ensure lets encrypt certs presents
+  shell:
+    cmd: "certbot certonly --standalone  --noninteractive --agree-tos --email {{ certbot_admin_email }} -d {{ item }}"
+    creates: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
+  loop: "{{ certbot_domain_names }}"
+
+- name: Setup strongswan server certs files
+  copy:
+    src: "/etc/letsencrypt/live/{{ item }}/chain.pem"
+    dest: "/etc/ipsec.d/cacerts/{{ item }}.pem"
+    remote_src: yes
+  loop: "{{ certbot_domain_names }}"
+
+- name: Setup strongswan server certs chains
+  copy:
+    src: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
+    dest: "/etc/ipsec.d/certs/{{ item }}.fullchain.crt"
+    remote_src: yes
+  loop: "{{ certbot_domain_names }}"
+
+- name: Setup strongswan server certs private keys
+  copy:
+    src: "/etc/letsencrypt/live/{{ item }}/privkey.pem"
+    dest: "/etc/ipsec.d/private/{{ item }}.key"
+    remote_src: yes
+  loop: "{{ certbot_domain_names }}"
+  notify:
+    - restart strongswan daemon
+
+- name: Ensure strongswan configuration present
+  template:
+    src: ipsec.conf.j2
+    dest: /etc/ipsec.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart strongswan daemon
+
+- name: Ensure ipsec secrets present
+  template:
+    src: ipsec.secrets.j2
+    dest: /etc/ipsec.secrets
+  notify:
+    - reload sysctl
+
+- name: Ensure ip forwarding enabled on host
+  template:
+    src: 99-sysctl.conf.j2
+    dest: /etc/sysctl.d/99-sysctl.conf
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+  notify:
+    - restart strongswan daemon
+
+- name: Setup UFW firewall
+  include_tasks: setup_ufw.yml
+  when: setup_ufw

@@ -1,0 +1,30 @@
+#jinja2: lstrip_blocks: "True"
+# Global parameters
+{% for param in openconnecthost_ocserv_config %}
+    {% set param_name = param | replace('_','-') -%}
+    {% if  openconnecthost_ocserv_config[param] is iterable and openconnecthost_ocserv_config[param] is not string and openconnecthost_ocserv_config[param] is not mapping %}
+        {% for entry in openconnecthost_ocserv_config[param] %}
+{{ param }} = {{ entry }}
+        {% endfor %}
+    {% else %}
+{{ param_name }} = {{ openconnecthost_ocserv_config[param] }}
+    {% endif %}
+{% endfor %}
+
+# VHOSTS configuration
+{% for vhost in openconnecthost_ocserv_vhosts %}
+[vhost:{{ openconnecthost_ocserv_vhosts[vhost]["domain"] }}]
+    {% for param in openconnecthost_ocserv_vhosts[vhost]["params"] %}
+    {% set param_name = param | replace('_','-') -%}
+    {% if openconnecthost_ocserv_vhosts[vhost]["params"][param] is iterable and openconnecthost_ocserv_vhosts[vhost]["params"][param] is not string and openconnecthost_ocserv_vhosts[vhost]["params"][param] is not mapping %}
+        {% for entry in openconnecthost_ocserv_vhosts[vhost]["params"][param] %}
+{{ param }} = {{ entry }}
+        {% endfor %}
+    {% else %}
+{{ param_name }} = {{ openconnecthost_ocserv_vhosts[vhost]["params"][param] }}
+    {% endif %}
+{% endfor %}
+
+{% endfor %}
+
+

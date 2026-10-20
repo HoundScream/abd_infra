@@ -1,0 +1,10 @@
+---
+- name: Playbook to configure IPA clients with username/password
+  hosts: "{{ custom_hosts | default('ipaclients') }}"
+  become: true
+
+  roles:
+  - role: ipaclient
+    state: present
+  - role: journald
+    state: present

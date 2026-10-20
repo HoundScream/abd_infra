@@ -1,0 +1,6 @@
+certbot_admin_email: admin@sandbox.rubda.ru
+certbot_domain_names:
+  - "{{ inventory_hostname_short }}.{{ default_domain }}"
+  - "raas.{{ default_domain }}"
+
+setup_ufw: no

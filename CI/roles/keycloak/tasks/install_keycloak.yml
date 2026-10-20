@@ -1,0 +1,75 @@
+---
+- name: Generate podman volumes dirs for keycloak
+  file:
+    path: "{{ keycloak_container_volume_path_ssl }}"
+    state: "directory"
+
+- name: Pull keycloak image
+  containers.podman.podman_image:
+    name: "{{ keycloak_image_url }}"
+    tag: "{{ keycloak_image_tag }}"
+    pull: true
+
+- name: Copy ssl certs for keycloak server
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    remote_src: yes
+  loop:
+    - { src: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key", dest: "{{ keycloak_ipa_cert_key_path }}"}
+    - { src: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.pem", dest: "{{ keycloak_ipa_cert_file_path }}"}
+
+- name: Change certs ownership
+  file:
+    path: "{{ item }}"
+    state: file
+    mode: u=rw,g=r,o=r
+  loop:
+    - "{{ keycloak_ipa_cert_file_path }}"
+    - "{{ keycloak_ipa_cert_key_path }}"
+
+- name: Start keycloak service
+  containers.podman.podman_container:
+    name: keycloak
+    command:
+      - start
+#      - "--optimized"
+#      - "--verbose"
+    detach: true
+    hostname: "{{ keycloak_hostname_fqdn }}"
+    image: "{{ keycloak_image_url }}:{{ keycloak_image_tag }}"
+    log_driver: journald
+    restart_policy: always
+    state: started
+    recreate: true
+    network: host
+    dns:
+      - "{{ hostvars['idm']['ansible_host'] }}"
+    mount:
+      - "type=bind,source={{ keycloak_ipa_cert_key_path }},destination={{ keycloak_ssl_cert_key_path }}"
+      - "type=bind,source={{ keycloak_ipa_cert_file_path }},destination={{ keycloak_ssl_cert_file_path }}"
+    env:
+      KC_HOSTNAME: "{{ keycloak_hostname_fqdn }}"
+      KC_DB_USERNAME: "{{ keycloak_db_user }}"
+      KC_DB_PASSWORD: "{{ keycloak_db_password }}"
+      KC_DB_URL_HOST: "{{ keycloak_db_host }}"
+      KC_HEALTH_ENABLED: "{{ keycloak_healthchecks_enable }}"
+      KC_METRICS_ENABLED: "{{ keycloak_metrics_enable }}"
+      KC_HTTP_ENABLED: "{{ keycloak_http_enable }}"
+#      KC_HTTPS_PORT: "{{ keycloak_https_port }}"
+      KC_HTTPS_CERTIFICATE_FILE: "{{ keycloak_ssl_cert_file_path }}"
+      KC_HTTPS_CERTIFICATE_KEY_FILE: "{{ keycloak_ssl_cert_key_path }}"
+      JAVA_OPTS_APPEND: "{{ keycloak_java_opts_append }}"
+      KEYCLOAK_ADMIN: "{{ keycloak_admin_username }}"
+      KEYCLOAK_ADMIN_PASSWORD: "{{ keycloak_admin_password }}"
+
+- name: Ensure keycloak service account present
+  ipauser:
+    ipaadmin_password: "{{ ipaadmin_password }}"
+    users:
+      - name: "{{ keycloak_ipa_user }}"
+        first: Keycloak
+        last: Service Account
+        email: "sso@{{ default_domain }}"
+        password: "{{ keycloak_ipa_user_password }}"
+

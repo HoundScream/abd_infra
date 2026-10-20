@@ -1,0 +1,31 @@
+- name: Setup host name fqdn
+  hostname:
+    name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+    use: systemd
+
+- name: Setup hosts file
+  template:
+    src: hosts.j2
+    dest: /etc/hosts
+#- name: "Setup fqdn host name (hosts)"
+#  lineinfile:
+#    dest: /etc/hosts
+#    regexp: "^{{ ansible_default_ipv4.address }}"
+#    line: "{{ ansible_default_ipv4.address }} {{ inventory_hostname_short }}.{{ default_domain }} {{ inventory_hostname_short }}"
+#    state: present
+#    backup: yes
+#
+#- name: "Setup idm host name"
+#  lineinfile:
+#    dest: /etc/hosts
+#    regexp: "^{{ hostvars['idm']['ansible_host'] }}"
+#    line: "{{ hostvars['idm']['ansible_host'] }} {{ hostvars['idm']['inventory_hostname_short'] }}.{{ hostvars['idm']['default_domain'] }} {{ hostvars['idm']['inventory_hostname_short'] }}"
+#    state: present
+#    backup: yes
+#
+#- name: "Remove tails from hosts file"
+#  lineinfile:
+#    dest: /etc/hosts
+#    regexp: "^127.0.[0-1]+.[0-1]+ {{ inventory_hostname_short }}"
+#    state: absent
+#    backup: yes

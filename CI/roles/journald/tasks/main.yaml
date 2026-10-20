@@ -1,0 +1,83 @@
+- name: Install base packages for Ubuntu
+  apt:
+    name: "{{ journald_packages }}"
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install base packages for AlmaLinux
+  yum:
+    name: "{{ journald_packages }}"
+  when: ansible_distribution == "AlmaLinux"
+
+- name: Ensure directory for ssl files exist
+  file:
+    path: "{{ journald_ssl_certs_path }}"
+    state: "directory"
+    mode: u=rwx,g=rx,o=rx
+
+- name: Copy ssl certs for journald
+#  when: inventory_hostname_short != journald_collector_host
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0640
+    remote_src: yes
+  loop:
+    - src: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key"
+      dest: "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.key"
+    - src: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key"
+      dest: "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.pem"
+
+- name: Ensure journald-upload user present
+  when: inventory_hostname_short != journald_collector_host
+  user:
+    name: "{{ journald_journal_upload_user }}"
+    state: present
+    system: yes
+    home: /run/systemd
+    create_home: no
+#    group: systemd-journal-upload
+
+- name: Ensure journald-upload user has accesss to own certificate files
+  when: inventory_hostname_short != journald_collector_host
+  file:
+    path: "{{ item }}"
+    owner: "{{ journald_journal_upload_user }}"
+  loop:
+    - "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.key"
+    - "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.pem"
+
+- name: Ensure journald-remote user has accesss to own certificate files
+  when: inventory_hostname_short == journald_collector_host
+  file:
+    path: "{{ item }}"
+    owner: "{{ journald_journal_remote_user }}"
+  loop:
+    - "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.key"
+    - "{{ journald_ssl_certs_path }}/{{ default_hostname_fqdn }}.pem"
+
+- name: Setup journal-remote systemd unit file
+  when: inventory_hostname_short == journald_collector_host
+  template:
+    src: systemd-journal-remote.service.j2
+    dest: /etc/systemd/system/systemd-journal-remote.service
+
+- name: Configure journald systemd unit
+  when: inventory_hostname_short == journald_collector_host
+  template:
+    src: journald.conf.j2
+    dest: /etc/systemd/journald.conf
+  notify: restart systemd-journald
+
+- name: Configure and enable journal upload services
+  when: inventory_hostname_short != journald_collector_host
+  template:
+    src: journal-upload.conf.j2
+    dest: /etc/systemd/journal-upload.conf
+  notify: restart journald-upload
+
+- name: Configure and enable journal remote services
+  when: inventory_hostname_short == journald_collector_host
+  template:
+    src: journal-remote.conf.j2
+    dest: /etc/systemd/journal-remote.conf
+  notify: restart journald-remote

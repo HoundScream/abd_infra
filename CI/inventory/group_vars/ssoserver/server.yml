@@ -1,0 +1,24 @@
+keycloak_hostname_fqdn: "{{ default_hostname_fqdn }}"
+
+keycloak_admin_username: admin
+keycloak_admin_password: "{{ default_keycloak_admin_password }}"
+keycloak_ipa_user: "svc_keycloak"
+keycloak_ipa_user_password: "{{ default_keycloak_ipa_password }}"
+keycloak_db_type: postgres
+keycloak_db_user: postgres
+keycloak_db_password: "{{ default_keycloak_postgres_password }}"
+keycloak_db_name: keycloak
+keycloak_db_host: "{{ keycloak_hostname_fqdn }}"
+
+keycloak_java_opts_append: "-Djava.net.preferIPv4Stack=true"
+keycloak_ssl_base: "/opt/keycloak/conf"
+keycloak_ssl_cert_file_path: "{{ keycloak_ssl_base }}/{{ keycloak_hostname_fqdn }}.pem"
+keycloak_ssl_cert_key_path: "{{ keycloak_ssl_base }}/{{ keycloak_hostname_fqdn }}.key"
+keycloak_https_port: 443
+
+keycloak_ipa_cert_file_path: "{{ keycloak_container_volume_path_ssl }}/{{ keycloak_hostname_fqdn }}.pem"
+keycloak_ipa_cert_key_path: "{{ keycloak_container_volume_path_ssl }}/{{ keycloak_hostname_fqdn }}.key"
+
+keycloak_healthchecks_enable: true
+keycloak_metrics_enable: true
+keycloak_http_enable: false

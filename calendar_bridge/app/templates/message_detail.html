@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Письмо #{{ row.id }}{% endblock %}
+{% block content %}
+<p class="breadcrumb"><a href="/messages">← Входящие письма</a></p>
+<h1>Письмо #{{ row.id }}</h1>
+
+{% if flash == 'reparsed' %}
+<div class="banner ok">Письмо перечитано из IMAP, параметры встречи обновлены.</div>
+{% elif flash == 'error' %}
+<div class="banner error">{{ request.query_params.get('msg', 'Ошибка перечитывания') }}</div>
+{% endif %}
+
+{% if incomplete %}
+<div class="banner warn">
+  В сохранённых данных нет времени или участников. Часто Exchange кладёт «пустой» calendar в тело письма,
+  а полный ICS — в winmail.dat. Нажмите «Перечитать из IMAP» после обновления парсера.
+</div>
+{% endif %}
+
+<form method="post" action="/messages/{{ row.id }}/reparse" style="margin-bottom:16px">
+  <button type="submit" class="btn-secondary">Перечитать из IMAP</button>
+</form>
+
+<section>
+  <h2>Исходное письмо</h2>
+  <dl class="kv">
+    <dt>Ящик</dt><dd>{{ user_email }}</dd>
+    <dt>Тема</dt><dd>{{ subject }}</dd>
+    <dt>От</dt><dd>{{ sender }}</dd>
+    <dt>Message-ID</dt><dd><code class="small">{{ row.message_id or '—' }}</code></dd>
+    <dt>IMAP UID</dt><dd>{{ row.imap_uid or '—' }}</dd>
+    <dt>Обработано</dt><dd>{{ when }}</dd>
+    <dt>Задача</dt><dd><a href="/jobs/incoming_invites/runs">{{ job_labels.incoming_invites }}</a></dd>
+    <dt>Результат</dt>
+    <dd><span class="{{ explanation.css }}"><strong>{{ explanation.label }}</strong></span><br>
+      <span class="muted">{{ explanation.detail }}</span></dd>
+  </dl>
+</section>
+
+{% if event %}
+<section>
+  <h2>Встреча для календаря</h2>
+  <p class="hint">Такие параметры уйдут в Яндекс Календарь (CalDAV) при LIVE-режиме.</p>
+  <dl class="kv">
+    <dt>Название</dt><dd>{{ event.summary or '—' }}</dd>
+    <dt>UID</dt><dd><code class="small">{{ event.uid or '—' }}</code></dd>
+    <dt>Начало</dt><dd>{{ event.dtstart or '—' }}</dd>
+    <dt>Конец</dt><dd>{{ event.dtend or '—' }}</dd>
+    <dt>Место</dt><dd>{{ event.location or '—' }}</dd>
+    <dt>Организатор</dt><dd>{% if event.organizer_name %}{{ event.organizer_name }} — {% endif %}{{ event.organizer_email or '—' }}</dd>
+    <dt>Участники</dt><dd>{% if event.attendees %}{{ event.attendees | join(', ') }}{% else %}—{% endif %}</dd>
+    <dt>Источник разбора</dt><dd>{{ event.source or '—' }}</dd>
+    {% if event.attachments %}
+    <dt>Вложения во встрече</dt>
+    <dd>
+      <ul class="plain">
+        {% for att in event.attachments %}
+        <li>{{ att.filename }} ({{ att.size_bytes }} байт)</li>
+        {% endfor %}
+      </ul>
+    </dd>
+    {% endif %}
+    {% if event.description %}
+    <dt>Описание</dt><dd class="pre-wrap">{{ event.description }}</dd>
+    {% endif %}
+  </dl>
+  {% if event.ics_preview %}
+  <h3>ICS (превью)</h3>
+  <pre class="code-block">{{ event.ics_preview }}</pre>
+  {% endif %}
+</section>
+{% endif %}
+
+<section>
+  <h2>Сырой JSON (отладка)</h2>
+  <pre class="code-block">{{ details_pretty }}</pre>
+</section>
+{% endblock %}

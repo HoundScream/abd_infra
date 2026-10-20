@@ -1,0 +1,43 @@
+strongswanhost_defaults_connection_params:
+  keyexchange: ikev2
+  left: "%defaultroute"
+  leftauth: pubkey
+  leftsubnet: 10.128.0.0/24
+  leftdns: 10.128.0.10
+  leftfirewall: "yes"
+  right: "%any"
+  rightfirewall: "yes"
+  rightdns: 10.128.0.10
+  rightsendcert: never
+  mobike: "yes"
+  compress: "no"
+  fragmentation: "yes"
+  ike: "aes256-sha512-modp4096,aes128-sha512-modp4096,aes256ccm96-sha384-modp2048,aes256-sha256-modp2048,aes128-sha256-modp2048,aes128-sha1-modp2048!"
+  esp: "aes256gcm128,aes128gcm128,aes256ccm128,aes256"
+  forceencaps: "yes"
+  dpdaction: "clear"
+  dpddelay: "300s"
+  rekey: "no"
+
+strongswanhost_connections:
+  ikev2-iac-sa:
+    auto: add
+    type: tunnel
+    leftid: "@raas.{{ default_domain }}"
+    leftcert: "raas.{{ default_domain }}.fullchain.crt"
+    leftsendcert: always
+    rightid: "%any"
+    rightauth: eap-mschapv2
+    rightsourceip: 10.255.255.0/25
+    eap_identity: "%identity"
+  armds-users:
+    auto: add
+    type: tunnel
+    leftid: "@cpe.{{ default_domain }}"
+    leftcert: "cpe.{{ default_domain }}.fullchain.crt"
+    leftsendcert: always
+    leftsubnet: 10.128.0.100-10.128.0.110[tcp/3389],10.128.0.10[tcp/https],10.128.0.11[tcp/8443],10.128.0.10[udp/dns]
+    rightid: "%any"
+    rightauth: eap-mschapv2
+    rightsourceip: 10.255.255.128/25
+    eap_identity: "%identity"

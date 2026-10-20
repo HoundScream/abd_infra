@@ -1,0 +1,10 @@
+---
+- name: Play to install SSO servers
+  hosts: "{{ custom_hosts | default('ssoserver') }}"
+  become: true
+
+  roles:
+  - role: podmanhost
+    state: present
+  - role: keycloak
+    state: present

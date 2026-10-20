@@ -1,0 +1,5 @@
+[Upload]
+URL=http://{{ journald_collector_host }}.{{ default_domain }}:19532
+ServerKeyFile=/etc/ssl/journald/{{ default_hostname_fqdn }}.key
+ServerCertificateFile=/etc/ssl/journald/{{ default_hostname_fqdn }}.pem
+TrustedCertificateFile=/etc/ipa/ca.crt

@@ -1,0 +1,17 @@
+- name: restart strongswan daemon
+  systemd:
+    daemon_reload: yes
+    name: strongswan-starter
+    state: restarted
+    enabled: yes
+
+- name: restart ufw daemon
+  systemd:
+    daemon_reload: yes
+    name: strongswan-starter
+    state: restarted
+    enabled: yes
+
+- name: reload sysctl
+  shell:
+    cmd: "sysctl -p"

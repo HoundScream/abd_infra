@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Исходящие приглашения{% endblock %}
+{% block content %}
+<h1>Исходящие приглашения</h1>
+<p class="hint">
+  Записи задачи
+  <a href="/jobs/outgoing_invites/runs">{{ job_labels.outgoing_invites }}</a>:
+  встреча в CalDAV с внешним участником → планируется или отправляется .ics по SMTP.
+  <a href="/messages">Входящие письма</a> — отдельный поток (письмо → календарь).
+</p>
+{% if settings.dry_run or not settings.outgoing_send_enabled %}
+<div class="banner warn">
+  Сейчас {% if settings.dry_run %}DRY RUN{% else %}отправка выключена{% endif %} —
+  письма не уходят, только сохраняется превью.
+</div>
+{% endif %}
+
+<section>
+  <table>
+    <tr>
+      <th>Когда</th>
+      <th>Ящик</th>
+      <th>Встреча</th>
+      <th>Кому</th>
+      <th>Результат</th>
+      <th></th>
+    </tr>
+    {% for item in rows %}
+    <tr>
+      <td class="nowrap">{{ item.when }}</td>
+      <td>{{ item.user_email }}</td>
+      <td>{{ item.event_summary or '—' }}</td>
+      <td>{{ item.recipient }}</td>
+      <td>
+        <span class="{{ item.explanation.css }}"><strong>{{ item.explanation.label }}</strong></span><br>
+        <span class="muted">{{ item.explanation.detail }}</span>
+      </td>
+      <td><a class="btn-link" href="/outgoing/{{ item.id }}">Подробнее</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="muted">Пока пусто — добавьте организации в разделе «Организации», нужны встречи с их доменами в CalDAV и SMTP.</td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

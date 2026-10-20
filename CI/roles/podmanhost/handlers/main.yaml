@@ -1,0 +1,5 @@
+- name: restart podman daemon
+  systemd:
+    daemon_reload: yes
+    name: podman
+    state: restarted

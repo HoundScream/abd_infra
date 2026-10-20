@@ -1,0 +1,4 @@
+default_ansible_user: ubuntu
+ansible_host: 10.128.0.100
+ansible_user: "{{ default_ansible_user }}"
+yc_vm_image_id: fd8tgblovu5dklvrp29h

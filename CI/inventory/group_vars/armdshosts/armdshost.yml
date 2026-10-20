@@ -1,0 +1,124 @@
+armdshost_xrdp_config:
+  Globals:
+    ini_version: 1
+    fork: "true"
+    address: "{{ ansible_host }}"
+    port: 3389
+    use_vsock: "false"
+    tcp_nodelay: "true"
+    tcp_keepalive: "true"
+    security_layer: negotiate
+    crypt_level: high
+    certificate: ""
+    key_file: ""
+    ssl_protocols: "TLSv1, TLSv1.1, TLSv1.2"
+    autorun: ""
+    allow_channels: "true"
+    allow_multimon: "true"
+    bitmap_cache: "true"
+    bitmap_compression: "true"
+    bulk_compression: "true"
+    max_bpp: 32
+    new_cursors: "true"
+    use_fastpath: both
+    blue: 009cb5
+    grey: dedede
+    ls_top_window_bg_color: 009cb5
+    ls_width: 350
+    ls_height: 430
+    ls_bg_color: dedede
+    ls_logo_filename: 
+    ls_logo_x_pos: 55
+    ls_logo_y_pos: 50
+    ls_label_x_pos: 30
+    ls_label_width: 60
+    ls_input_x_pos: 110
+    ls_input_width: 210
+    ls_input_y_pos: 220
+    ls_btn_ok_x_pos: 142
+    ls_btn_ok_y_pos: 370
+    ls_btn_ok_width: 85
+    ls_btn_ok_height: 30
+    ls_btn_cancel_x_pos: 237
+    ls_btn_cancel_y_pos: 370
+    ls_btn_cancel_width: 85
+    ls_btn_cancel_height: 30
+#    tcp_send_buffer_bytes: 4194304
+  Logging:
+    LogFile: xrdp.log
+    LogLevel: DEBUG
+    EnableSyslog: "true"
+    SyslogLevel: DEBUG
+  Channels:
+    rdpdr: "false"
+    rdpsnd: "true"
+    drdynvc: "true"
+    cliprdr: "false"
+    rail: "true"
+    xrdpvr: "true"
+    tcutils: "true"
+  Xorg:
+    name: Xorg
+    lib: libxup.so
+    username: ask
+    password: ask
+    ip: 127.0.0.1
+    port: -1
+    code: 20
+  X11rdp:
+    name: X11rdp
+    lib: libxup.so
+    username: ask
+    password: ask
+    ip: 127.0.0.1
+    port: -1
+    xserverbpp: 24
+    code: 10
+
+armdshost_xrdp_sesman_config:
+  Globals:
+    ListenAddress: 127.0.0.1
+    ListenPort: 3350
+    EnableUserWindowManager: false
+    UserWindowManager: startwm.sh
+    DefaultWindowManager: startwm.sh
+  Security:
+    AllowRootLogin: false
+    MaxLoginRetry: 4
+    TerminalServerUsers: armds_terminal_users
+    TerminalServerAdmins: armds_terminal_administrators
+    AlwaysGroupCheck: false
+  Sessions:
+    X11DisplayOffset: 10
+    MaxSessions: 50
+    KillDisconnected: true
+    DisconnectedTimeLimit: 300
+    Policy: UB
+  Logging:
+    LogFile: xrdp-sesman.log
+    LogLevel: DEBUG
+    EnableSyslog: 1
+    SyslogLevel: DEBUG
+  Xorg:
+    param:
+      - /usr/lib/xorg/Xorg
+      - -config
+      - xrdp/xorg.conf
+      - -noreset
+      - -nolisten
+      - tcp
+      - -logfile
+      - .xorgxrdp.%s.log
+  Xvnc:
+    param:
+      - Xvnc
+      - -bs
+      - -nolisten
+      - tcp
+      - -localhost
+      - -dpi
+      - 96
+  Chansrv:
+    FuseMountName: thinclient_drives
+  SessionVariables:
+    PULSE_SCRIPT: /etc/xrdp/pulse/default.pa

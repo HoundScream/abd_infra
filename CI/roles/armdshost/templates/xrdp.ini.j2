@@ -1,0 +1,8 @@
+{% for section in armdshost_xrdp_config %}
+[{{ section }}]
+{% for item in armdshost_xrdp_config[section] %}
+{{ item }} = {{ armdshost_xrdp_config[section][item] }}
+{% endfor %}
+
+{% endfor %}
+

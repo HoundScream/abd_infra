@@ -1,0 +1,9 @@
+---
+- name: Playbook to configure ARM DS hosts with PAM AUTH
+  hosts: "{{ custom_hosts | default('armdshosts') }}"
+  become: true
+
+  roles:
+  - role: armdshost
+    state: present
+

@@ -1,0 +1,8 @@
+journald_packages:
+  - systemd-journal-remote
+
+journald_ssl_certs_path: /etc/ssl/journald
+journald_journal_upload_user: systemd-journal-upload
+journald_journal_remote_user: systemd-journal-remote
+journald_journal_remote_keep_free_space: 4G
+journald_journal_remote_retention_time: 90day

@@ -1,0 +1,26 @@
+---
+default_ansible_user: svc_iac_sa
+default_ansible_user_ssh_pub_keys: "{{ default_ansible_user }}:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/NCTAOGZ6b2+J7qTNBlJg4VlUOUlj6w9dLLgrW6yA2JHNdb8jU9cd517oIYiopXOZ8vZRr8C1338sjYmiy+Ea3e0SDxC74X2QES/Rcb02Rv2oZDP4EPspUECQAhkyKODzruhTw4e3NWH9Tu/OiH2L1ADJKoXhDhXAR8LIoTV2zJwDB6sB6W3p70FA9o8iO8OP0VRyDDiWFWU4eDJ4mtuxutIR9ia58byelGS8QW9KaxE3oedo0GdAReOOft3n2jNIdEFCNNpTV7h70vYGecuyTtMB290PKEoRMT0m03xJqeeCdkXeRZrvkTuSYPEa9jsFNCqk3kop+RM+hXdhH0ExFQdRG+xYFQ7woF/LT/WUrXb4tbr/kZatqr26hd/zGP583GslDr6WsNj/vBrKXwQGJTOHKaDxT7znDsnLe5MujsNbsJidABcOvcvWXw9aAuXB8zekCpBDcc9o1KtH8dWV0fYNlmXivhON+9jfZ269G5l5DVJCJAiWkJZ+7vJ6jD8="
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+ansible_ssh_private_key_file: ~/.ssh/armds_id_rsa
+ansible_python_interpreter: /usr/bin/python3
+
+default_hostname_fqdn: "{{ inventory_hostname_short }}.{{ default_domain }}"
+default_ipa_certs_path: /etc/ipa/certs
+
+default_ipa_servers:
+  - idm.sandbox.rubda.ru
+default_domain: sandbox.rubda.ru
+default_realm: SANDBOX.RUBDA.RU
+
+default_tf_project_path: /Users/ext/ARMDC/CI/TF
+default_tf_vm_platform_id: "standard-v1"
+
+# terraform base vars
+default_tf_yc_cloud_id: b1g9nbvkf50o4fk6bkd8
+default_tf_yc_folder_id: b1ge40a4pthgp0qrb8qr
+
+#terraform network vars
+default_tf_yc_network_id: enpi4u4q4ofpjielhfq6
+default_tf_yc_subnet_id: e9bb4vrr7o1fmrltdcrn
+default_tf_yc_subnet_cidr: "10.128.0.0/24"

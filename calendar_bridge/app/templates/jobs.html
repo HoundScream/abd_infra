@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Задачи{% endblock %}
+{% block content %}
+<h1>Фоновые задачи</h1>
+<table>
+  <tr><th>Код</th><th>Название</th><th>Описание</th><th>Интервал</th><th></th></tr>
+  {% for job in jobs %}
+  <tr>
+    <td><code>{{ job.slug }}</code></td>
+    <td>{{ job.title }}</td>
+    <td>{{ job.description }}</td>
+    <td>{{ job.interval_seconds }} сек</td>
+    <td><a href="/jobs/{{ job.slug }}/runs">Логи</a></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

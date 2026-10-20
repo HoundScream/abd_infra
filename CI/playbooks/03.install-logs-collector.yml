@@ -1,0 +1,9 @@
+---
+- name: Playbook to configure logs collector hosts
+  hosts: "{{ custom_hosts | default('logcltr') }}"
+  become: true
+
+  roles:
+  - role: journald
+    state: present
+

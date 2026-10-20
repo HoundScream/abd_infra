@@ -1,0 +1,14 @@
+{% for section in armdshost_xrdp_sesman_config %}
+[{{ section }}]
+{% for item in armdshost_xrdp_sesman_config[section] %}
+{% if armdshost_xrdp_sesman_config[section][item] is iterable and armdshost_xrdp_sesman_config[section][item] is not string and armdshost_xrdp_sesman_config[section][item] is not mapping %}
+{% for element in armdshost_xrdp_sesman_config[section][item] %}
+{{ item }} = {{ element }}
+{% endfor %}
+{% else %}
+{{ item }} = {{ armdshost_xrdp_sesman_config[section][item]}}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+

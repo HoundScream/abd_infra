@@ -1,0 +1,16 @@
+- name: Ensure directory for ssl files exist
+  file:
+      path: "{{ default_ipa_certs_path }}"
+      state: "directory"
+
+- name: Copy ssl certs for journald
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0640
+    remote_src: yes
+  loop:
+    - src: "/var/lib/ipa/private/httpd.key"
+      dest: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.key"
+    - src: "/var/lib/ipa/certs/httpd.crt"
+      dest: "{{ default_ipa_certs_path }}/{{ default_hostname_fqdn }}.pem"

@@ -1,0 +1,12 @@
+---
+ipaserver_setup_dns: yes
+ipaserver_auto_forwarders: yes
+ipaserver_forward_policy: first
+ipaserver_reverse_zones: yes
+
+ipaserver_domain: "{{ default_domain }}"
+ipaserver_realm: "{{ default_realm }}"
+
+ipaadmin_password: "{{ default_ipaadmin_password }}"
+ipadm_password: "{{ default_ipadm_password }}"
+

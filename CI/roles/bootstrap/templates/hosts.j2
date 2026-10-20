@@ -1,0 +1,15 @@
+# loopback addresses
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# self addresses
+{% if ansible_internal_host is defined %}
+{{ ansible_internal_host }} {{ default_hostname_fqdn }} {{ inventory_hostname_short }}
+{% else %}
+{{ ansible_host }} {{ default_hostname_fqdn }} {{ inventory_hostname_short }}
+{% endif %}
+
+{% if ansible_host != hostvars['idm']['ansible_host'] %}
+# idm address
+{{ hostvars['idm']['ansible_host'] }} idm.{{ hostvars['idm']['default_domain'] }} idm
+{% endif %}

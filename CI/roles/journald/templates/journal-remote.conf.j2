@@ -1,0 +1,9 @@
+[Remote]
+Seal=false
+SplitMode=host
+ServerKeyFile=/etc/ssl/journald/{{ default_hostname_fqdn }}.key
+ServerCertificateFile=/etc/ssl/journald/{{ default_hostname_fqdn }}.pem
+TrustedCertificateFile=/etc/ipa/ca.crt
+SystemKeepFree={{ journald_journal_remote_keep_free_space }}
+MaxRetentionSec={{ journald_journal_remote_retention_time }}
+

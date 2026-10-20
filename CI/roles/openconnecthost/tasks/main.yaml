@@ -1,0 +1,73 @@
+- name: Setup VPN server packages
+  include_tasks: install_packages.yml
+
+- name: Ensure lets encrypt certs presents
+  shell:
+    cmd: "certbot certonly --standalone  --noninteractive --agree-tos --email {{ certbot_admin_email }} -d {{ item }}"
+    creates: "/etc/letsencrypt/live/{{ item }}/fullchain.pem"
+  loop: "{{ certbot_domain_names }}"
+
+- name: Ensure PAM configured for ocserv
+  template:
+    src: pam_ocserv.j2
+    dest: /etc/pam.d/ocserv
+    owner: root
+    group: root
+
+- name: Ensure configs directories structure exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+  loop:
+    - "{{ ocserv_config_base }}"
+    - "{{ ocserv_config_base }}/config_per_user"
+    - "{{ ocserv_config_base }}/config_per_group"
+    - "{{ ocserv_config_base }}/defaults"
+
+- name: Ensure ocservd configuration present
+  template:
+    src: ocserv.conf.j2
+    dest: "{{ ocserv_config_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+    validate: ocserv --test-config --config=%s
+  notify: restart ocserv daemon
+
+- name: Ensure default users present
+  template:
+    src: ocserv.secrets.j2
+    dest: "{{ ocserv_plain_secrets_file }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o-
+
+- name: Ensure user groups configs present
+  template:
+    src: config_per_group.j2
+    dest: "{{ ocserv_config_base }}/config_per_group/{{ item }}"
+    owner: root
+    group: root
+  with_items: "{{ openconnecthost_ocserv_config_per_group }}"
+
+- name: Ensure systemd unit present and ocserv started
+  template:
+    src: ocserv.service.j2
+    dest: /lib/systemd/system/ocserv.service
+    owner: root
+    group: root
+  notify: restart ocserv daemon
+
+- name: Ensure ip forwarding activated
+  sysctl:
+    name:       net.ipv4.ip_forward
+    value:      1
+    sysctl_set: yes
+    state:      present
+    reload:     yes
+
+- name: Setup UFW firewall
+  include_tasks: setup_ufw.yml
+  when: setup_ufw

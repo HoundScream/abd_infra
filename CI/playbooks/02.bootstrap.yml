@@ -1,0 +1,10 @@
+---
+- name: Bootstrap hosts
+  hosts: "{{ custom_hosts | default('all') }}"
+  become: true
+
+  roles:
+  - role: bootstrap
+    state: present
+
+

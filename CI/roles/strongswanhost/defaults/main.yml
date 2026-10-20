@@ -1,0 +1,18 @@
+certbot_admin_email: admin@sandbox.rubda.ru
+certbot_domain_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+
+strongswanhost_defaults_connection_params:
+  keyexchange: ikev2
+  left: "%defaultroute"
+  leftauth: pubkey
+  leftsubnet: 0.0.0.0/0
+  leftfirewall: "yes"
+  leftid: "@{{ certbot_domain_name }}"
+  leftcert: server.crt
+  leftsendcert: always
+  right: "%any"
+  mobike: "yes"
+  compress: "no"
+  fragmentation: "yes"
+  ike: "aes256-sha512-modp4096,aes128-sha512-modp4096,aes256ccm96-sha384-modp2048,aes256-sha256-modp2048,aes128-sha256-modp2048,aes128-sha1-modp2048!"
+  esp: "aes256gcm128,aes128gcm128,aes256ccm128,aes256"

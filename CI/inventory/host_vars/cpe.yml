@@ -1,0 +1,10 @@
+default_ansible_user: ubuntu
+ansible_host: "{{ yc_vm_nat_ip_address }}"
+ansible_internal_host: 10.128.0.5
+ansible_user: "{{ default_ansible_user }}"
+yc_vm_image_id: fd8tgblovu5dklvrp29h
+yc_vm_nat_ip_address: 158.160.51.221
+
+
+
+

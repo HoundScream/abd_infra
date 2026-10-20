@@ -1,0 +1,3 @@
+# vars/Ubuntu-22.04.yml
+---
+ipaclient_packages: [ "freeipa-client" ]

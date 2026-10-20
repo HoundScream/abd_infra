@@ -1,0 +1,7 @@
+certbot_admin_email: admin@sandbox.rubda.ru
+certbot_domain_name: "{{ inventory_hostname_short }}.{{ default_domain }}"
+
+ocserv_config_base: /etc/ocserv
+ocserv_config_file: "{{ ocserv_config_base }}/ocserv.conf"
+ocserv_plain_secrets_file: "{{ ocserv_config_base }}/ocserv.secrets"
+ocserv_ssl_base: "/etc/letsencrypt/live"

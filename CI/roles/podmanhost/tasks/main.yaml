@@ -1,0 +1,34 @@
+- name: Install Podman requrements
+  apt:
+    name:
+      - buildah
+      - catatonit
+      - conmon
+      - containernetworking-plugins
+      - crun
+      - dconf-gsettings-backend
+      - dconf-service
+      - dns-root-data
+      - dnsmasq-base
+      - fuse-overlayfs
+      - glib-networking
+      - glib-networking-common
+      - glib-networking-services
+      - session-migration
+      - uidmap
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install Podman daemon
+  apt:
+    name:
+      - podman
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  notify:
+  - restart podman daemon
+
+
+

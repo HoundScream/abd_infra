@@ -1,0 +1,22 @@
+# ipsec.conf - strongSwan IPsec configuration file
+
+# basic configuration
+config setup
+	# strictcrlpolicy=yes
+	uniqueids = never
+
+# strongswanhost_defaults_connection_params
+conn %default
+{% for item in strongswanhost_defaults_connection_params %}
+    {{ item }}={{ strongswanhost_defaults_connection_params[item] }}
+{% endfor %}
+
+# strongswanhost_connections
+{% for connection in strongswanhost_connections %}
+conn {{ connection }}
+{% for item in strongswanhost_connections[connection] %}
+    {{ item }}={{ strongswanhost_connections[connection][item] }}
+{% endfor %}
+
+{% endfor %}
+

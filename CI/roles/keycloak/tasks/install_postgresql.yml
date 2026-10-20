@@ -1,0 +1,29 @@
+---
+- name: Generate podman volumes dirs for postgresql
+  file:
+    path: "{{ postgresql_container_volume_path }}"
+    state: "directory"
+
+- name: Pull postgresql image
+  containers.podman.podman_image:
+    name: "{{ postgresql_image_url }}"
+    tag: "{{ postgresql_image_tag }}"
+    pull: true
+
+- name: Start postgresql service
+  containers.podman.podman_container:
+    name: postgres
+    detach: true
+    hostname: "{{ inventory_hostname_short }}.{{ default_domain }}"
+    image: "{{ postgresql_image_url }}:{{ postgresql_image_tag }}"
+    log_driver: journald
+    restart_policy: always
+    state: started
+    recreate: false
+    network: host
+    volume:
+      - "{{ postgresql_container_volume_path }}:/var/lib/postgresql/data"
+    env:
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_PASSWORD: "{{ keycloak_db_password }}"
+

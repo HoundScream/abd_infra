@@ -1,0 +1,7 @@
+- name: restart ocserv daemon
+  systemd:
+    daemon_reload: yes
+    name: ocserv
+    state: restarted
+    enabled: yes
+
